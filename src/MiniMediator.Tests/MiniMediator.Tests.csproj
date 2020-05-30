@@ -5,8 +5,8 @@
     <IsPackable>false</IsPackable>
     <Company />
     <Copyright>Matthew Nelson-White</Copyright>
-    <PackageProjectUrl>https://github.com/mnelsonwhite/SimpleMediator</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/mnelsonwhite/Simplemediator</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mnelsonwhite/MiniMediator</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mnelsonwhite/MiniMediator</RepositoryUrl>
     <NeutralLanguage>en-AU</NeutralLanguage>
     <Version>1.0.0</Version>
   </PropertyGroup>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimpleMediator\SimpleMediator.csproj" />
+    <ProjectReference Include="..\MiniMediator\MiniMediator.csproj" />
   </ItemGroup>
 
 </Project>

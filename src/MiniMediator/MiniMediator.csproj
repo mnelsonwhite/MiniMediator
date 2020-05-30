@@ -8,8 +8,8 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Library to handle ranges of comparibles</Description>
     <Copyright>Matthew Nelson-White</Copyright>
-    <PackageProjectUrl>https://github.com/mnelsonwhite/SimpleMediator</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/mnelsonwhite/Simplemediator</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mnelsonwhite/MiniMediator</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mnelsonwhite/MiniMediator</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <NeutralLanguage>en-AU</NeutralLanguage>

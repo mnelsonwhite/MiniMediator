@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using Xunit;
 
-namespace SimpleMediator.Tests
+namespace MiniMediator.Tests
 {
-    public class SimpleMediatorTests
+    public class MiniMediatorTests
     {
         [Fact]
         public void WhenSendMessage_ItShouldBeReceived()
