@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 
 namespace SimpleMediator
 {
@@ -16,9 +15,12 @@ namespace SimpleMediator
             observers = new Dictionary<Type, Subject<object>>();
         }
 
-        public Mediator Send<T>(T message)
+        public Mediator Publish<T>(T message)
         {
-            foreach (var pair in observers.Where(kv => kv.Key.IsAssignableFrom(typeof(T))))
+            if (message == null) throw new ArgumentNullException(nameof(message));
+
+            var type = typeof(T);
+            foreach (var pair in observers.Where(kv => kv.Key == type || kv.Key.IsAssignableFrom(type)))
             {
                 pair.Value.OnNext(message!);
             }
