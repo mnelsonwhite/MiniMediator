@@ -1,6 +1,6 @@
 # MiniMediator
 
-[![Build Status](https://dev.azure.com/atlanticblue/MiniMediator/_apis/build/status/mnelsonwhite.SimpleMediator?branchName=master)](https://dev.azure.com/atlanticblue/MiniMediator/_build/latest?definitionId=3&branchName=master)
+[![Build Status](https://dev.azure.com/atlanticblue/MiniMediator/_apis/build/status/mnelsonwhite.MiniMediator?branchName=master)](https://dev.azure.com/atlanticblue/MiniMediator/_build/latest?definitionId=4&branchName=master)
 
 A simple mediator that requires no setup, just publish messages and subscribe to messages.
 Helpful with event driven applications.
