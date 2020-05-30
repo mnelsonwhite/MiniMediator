@@ -1,10 +1,11 @@
 # SimpleMediator
 
-A simple mediator that requires no setup. Publish a message from one class and consumer it from another.
+A simple mediator that requires no setup, just publish messages and subscribe to messages.
+Helpful with event driven applications.
 
 ## Usage
 
-With an example consumer and message
+With an example consumer and message. A single message can be consumed by many subscribed consumers.
 
 ``` c#
 public class Consumer

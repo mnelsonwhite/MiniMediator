@@ -43,10 +43,9 @@ namespace SimpleMediator.Tests
             mediator.Publish(message);
 
             // Assert
-            consumer.Received(1).Receive(Arg.Is<Message>(x => x.Content == message.Content));
-            differentConsumer.Received(1).DifferentReceive(Arg.Is<DifferentMessage>(
-                x => x.Content == message.Content && x.Sequence == message.Sequence
-            ));
+            consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
+            differentConsumer.Received(1)
+                .DifferentReceive(Arg.Is<DifferentMessage>(x => x == message));
         }
 
         [Fact]
@@ -65,7 +64,7 @@ namespace SimpleMediator.Tests
             mediator.Publish(message);
 
             // Assert
-            consumer.Received(1).Receive(Arg.Is<Message>(x => x.Content == message.Content));
+            consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
             differentConsumer.DidNotReceive().DifferentReceive(Arg.Any<DifferentMessage>());
         }
 
@@ -86,7 +85,7 @@ namespace SimpleMediator.Tests
             mediator.Publish<Message>(message);
 
             // Assert
-            consumer.Received(1).Receive(Arg.Is<Message>(x => x.Content == message.Content));
+            consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
             differentConsumer.DidNotReceive().DifferentReceive(Arg.Any<DifferentMessage>());
         }
         
