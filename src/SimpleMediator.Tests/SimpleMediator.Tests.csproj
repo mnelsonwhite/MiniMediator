@@ -2,8 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-
     <IsPackable>false</IsPackable>
+    <Company />
+    <Copyright>Matthew Nelson-White</Copyright>
+    <PackageProjectUrl>https://github.com/mnelsonwhite/SimpleMediator</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mnelsonwhite/Simplemediator</RepositoryUrl>
+    <NeutralLanguage>en-AU</NeutralLanguage>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

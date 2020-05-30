@@ -1,4 +1,5 @@
 # SimpleMediator
+[![Build Status](https://atlanticblue.visualstudio.com/SimpleMediator/_apis/build/status/mnelsonwhite.SimpleMediator?branchName=master)](https://atlanticblue.visualstudio.com/SimpleMediator/_build/latest?definitionId=3&branchName=master)
 
 A simple mediator that requires no setup, just publish messages and subscribe to messages.
 Helpful with event driven applications.
