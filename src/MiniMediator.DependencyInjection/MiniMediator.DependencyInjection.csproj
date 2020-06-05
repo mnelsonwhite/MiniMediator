@@ -18,10 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MiniMediator\MiniMediator.csproj" />
+    <PackageReference Include="MiniMediator" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
