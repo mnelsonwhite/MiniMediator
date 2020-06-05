@@ -7,6 +7,8 @@ Helpful with event driven applications.
 
 ## Usage
 
+### Simple
+
 With an example consumer and message. A single message can be consumed by many subscribed consumers.
 
 ``` c#
@@ -131,4 +133,16 @@ mediator.Publish<Message>(message);
 // Assert
 consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
 differentConsumer.DidNotReceive().DifferentReceive(Arg.Any<DifferentMessage>());
+```
+
+### Dependency Injection
+
+Implement handlers using the `IMessageHandler<TMessage>` interface. Then use the `IContainerExtensions`.
+
+``` c#
+// register with service container
+serivces.AddTransient<MyHandler>()
+
+// and/or specify assemblies to load
+services.AddMediator(Assembly.GetExecutingAssembly());
 ```

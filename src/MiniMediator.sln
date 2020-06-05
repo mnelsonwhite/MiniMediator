@@ -5,7 +5,14 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniMediator", "MiniMediator\MiniMediator.csproj", "{7189DB7E-CD8C-4A4B-9091-1085819A56B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMediator.Tests", "MiniMediator.Tests\MiniMediator.Tests.csproj", "{88346D4B-105A-4C93-828D-96E37680E94B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniMediator.Tests", "MiniMediator.Tests\MiniMediator.Tests.csproj", "{88346D4B-105A-4C93-828D-96E37680E94B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{60FD87AF-EA78-42F3-9F55-D210D011FB38}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMediator.DependencyInjection", "MiniMediator.DependencyInjection\MiniMediator.DependencyInjection.csproj", "{59599408-362B-427C-A429-547976E18E80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +28,10 @@ Global
 		{88346D4B-105A-4C93-828D-96E37680E94B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88346D4B-105A-4C93-828D-96E37680E94B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88346D4B-105A-4C93-828D-96E37680E94B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59599408-362B-427C-A429-547976E18E80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59599408-362B-427C-A429-547976E18E80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59599408-362B-427C-A429-547976E18E80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59599408-362B-427C-A429-547976E18E80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
