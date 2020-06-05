@@ -15,6 +15,11 @@ namespace MiniMediator
             observers = new Dictionary<Type, Subject<object>>();
         }
 
+        public Mediator Publish<T>() where T : new ()
+        {
+            return Publish(new T());
+        }
+
         public Mediator Publish<T>(T message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
