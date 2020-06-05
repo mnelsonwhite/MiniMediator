@@ -26,11 +26,6 @@ steps:
     command: 'pack'
     packagesToPack: '**/MiniMediator.csproj'
     versioningScheme: 'off'
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    packagesToPack: '**/MiniMediator.DependenyInjection.csproj'
-    versioningScheme: 'off'
 
 - task: PublishBuildArtifacts@1
   inputs:
