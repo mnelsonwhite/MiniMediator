@@ -6,9 +6,15 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    
     public static class IContainerExtensions
     {
         public static IServiceCollection AddMediator(this IServiceCollection services, params Assembly[] assemblies)
+        {
+            return AddMediator(services, ServiceLifetime.Singleton, assemblies);
+        }
+
+        public static IServiceCollection AddMediator(this IServiceCollection services, ServiceLifetime lifetime, params Assembly[] assemblies)
         {
             var handlerTypes = assemblies
                 .SelectMany(assembly => assembly.GetTypes())
@@ -20,11 +26,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             foreach(var handlerType in handlerTypes)
             {
-                services.AddTransient(handlerType);
+                services.TryAddTransient(handlerType);
             }
 
             services.TryAddTransient(provider => services);
-            services.AddSingleton(bulidMediator);
+            services.Add(new ServiceDescriptor(typeof(Mediator), bulidMediator, lifetime));
+
             return services;
         }
 
