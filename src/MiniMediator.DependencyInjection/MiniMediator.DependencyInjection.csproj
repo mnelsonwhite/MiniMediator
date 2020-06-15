@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
-    <PackageReference Include="MiniMediator" Version="1.2.0" />
+    <PackageReference Include="MiniMediator" Version="1.3.0" />
   </ItemGroup>
 
   <ItemGroup>
