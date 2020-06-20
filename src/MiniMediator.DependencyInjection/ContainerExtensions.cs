@@ -6,7 +6,7 @@ using System.Linq;
 namespace Microsoft.Extensions.DependencyInjection
 {
 
-    public static class IContainerExtensions
+    public static class ContainerExtensions
     {
         public static IServiceCollection AddMediator(this IServiceCollection services)
         {
@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var optionsInstance = new MediatorOptions();
             options(optionsInstance);
-
 
             var handlerTypes = optionsInstance.Assemblies
                 .SelectMany(assembly => assembly.GetTypes())

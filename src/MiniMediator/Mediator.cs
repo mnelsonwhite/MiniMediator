@@ -34,9 +34,9 @@ namespace MiniMediator
             foreach (var pair in observers.Where(kv => kv.Key == type || kv.Key.IsAssignableFrom(type)))
             {
                 pair.Value.OnNext(message!);
-                OnPublished?.Invoke(this, new PublishEventArgs(message, pair.Key));
             }
 
+            OnPublished?.Invoke(this, new PublishEventArgs(message));
             return this;
         }
 
