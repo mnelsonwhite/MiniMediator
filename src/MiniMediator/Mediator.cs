@@ -11,6 +11,10 @@ namespace MiniMediator
     public class Mediator
     {
         protected readonly IDictionary<Type, Subject<object>> observers;
+        /// <summary>
+        /// Callback on publish. Used for logging
+        /// </summary>
+        public event EventHandler<IPublishEventArgs>? OnPublished;
 
         public Mediator()
         {
@@ -30,6 +34,7 @@ namespace MiniMediator
             foreach (var pair in observers.Where(kv => kv.Key == type || kv.Key.IsAssignableFrom(type)))
             {
                 pair.Value.OnNext(message!);
+                OnPublished?.Invoke(this, new PublishEventArgs(message, pair.Key));
             }
 
             return this;
