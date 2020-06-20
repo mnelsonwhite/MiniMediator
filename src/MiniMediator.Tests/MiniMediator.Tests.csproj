@@ -8,7 +8,7 @@
     <PackageProjectUrl>https://github.com/mnelsonwhite/MiniMediator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mnelsonwhite/MiniMediator</RepositoryUrl>
     <NeutralLanguage>en-AU</NeutralLanguage>
-    <Version>1.4.0</Version>
+    <Version>1.5.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

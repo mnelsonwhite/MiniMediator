@@ -2,21 +2,24 @@
 using MiniMediator;
 using System;
 using System.Linq;
-using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    
+
     public static class IContainerExtensions
     {
-        public static IServiceCollection AddMediator(this IServiceCollection services, params Assembly[] assemblies)
+        public static IServiceCollection AddMediator(this IServiceCollection services)
         {
-            return AddMediator(services, ServiceLifetime.Singleton, assemblies);
+            return AddMediator(services, options => { });
         }
 
-        public static IServiceCollection AddMediator(this IServiceCollection services, ServiceLifetime lifetime, params Assembly[] assemblies)
+        public static IServiceCollection AddMediator(this IServiceCollection services, Action<MediatorOptions> options)
         {
-            var handlerTypes = assemblies
+            var optionsInstance = new MediatorOptions();
+            options(optionsInstance);
+
+
+            var handlerTypes = optionsInstance.Assemblies
                 .SelectMany(assembly => assembly.GetTypes())
                 .Where(type => type
                     .GetInterfaces()
@@ -30,14 +33,21 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddTransient(provider => services);
-            services.Add(new ServiceDescriptor(typeof(Mediator), bulidMediator, lifetime));
+            services.Add(
+                new ServiceDescriptor(
+                    typeof(Mediator), provider => bulidMediator(provider, optionsInstance),
+                    optionsInstance.Lifetime
+                )
+            );
 
             return services;
         }
 
-        private static Mediator bulidMediator(IServiceProvider provider)
+        private static Mediator bulidMediator(IServiceProvider provider, MediatorOptions options)
         {
             var mediator = new Mediator();
+            if (options.PublishEventHandler != null) mediator.OnPublished += options.PublishEventHandler;
+
             var services = provider.GetService<IServiceCollection>();
             var subscribeMethod = typeof(Mediator).GetMethods().Where(
                 method =>
