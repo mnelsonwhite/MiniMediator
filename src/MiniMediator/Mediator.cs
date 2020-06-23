@@ -28,6 +28,7 @@ namespace MiniMediator
 
         public Mediator Publish<TMessage>(TMessage message)
         {
+            OnPublished?.Invoke(this, new PublishEventArgs(message));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var type = typeof(TMessage);
@@ -36,7 +37,6 @@ namespace MiniMediator
                 pair.Value.OnNext(message!);
             }
 
-            OnPublished?.Invoke(this, new PublishEventArgs(message));
             return this;
         }
 
