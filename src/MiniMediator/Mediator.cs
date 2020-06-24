@@ -2,23 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace MiniMediator
 {
     public class Mediator
     {
-        protected readonly IDictionary<Type, Subject<object>> observers;
         /// <summary>
         /// Callback on publish. Used for logging
         /// </summary>
         public event EventHandler<IPublishEventArgs>? OnPublished;
-
+        private readonly IDictionary<Type, BehaviourSubject<object>> observers;
+        
         public Mediator()
         {
-            observers = new Dictionary<Type, Subject<object>>();
+            observers = new Dictionary<Type, BehaviourSubject<object>>();
         }
 
         public Mediator Publish<TMessage>() where TMessage : new ()
@@ -28,13 +25,20 @@ namespace MiniMediator
 
         public Mediator Publish<TMessage>(TMessage message)
         {
-            OnPublished?.Invoke(this, new PublishEventArgs(message));
+            OnPublished?.Invoke(this, new PublishEventArgs(message!));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var type = typeof(TMessage);
-            foreach (var pair in observers.Where(kv => kv.Key == type || kv.Key.IsAssignableFrom(type)))
+
+            var messageObservers = observers.Where(kv => kv.Key == type || kv.Key.IsAssignableFrom(type)).ToArray();
+            foreach (var pair in messageObservers)
             {
                 pair.Value.OnNext(message!);
+            }
+
+            if (messageObservers.Length == 0)
+            {
+                observers.Add(typeof(TMessage), new BehaviourSubject<object>(message));
             }
 
             return this;
@@ -49,7 +53,7 @@ namespace MiniMediator
         {
             if (!observers.ContainsKey(typeof(TMessage)))
             {
-                observers.Add(typeof(TMessage), new Subject<object>());
+                observers.Add(typeof(TMessage), new BehaviourSubject<object>());
             }
 
             disposable = observers[typeof(TMessage)].Cast<TMessage>().Subscribe(subscription);

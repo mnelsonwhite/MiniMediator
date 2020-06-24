@@ -13,7 +13,8 @@ namespace MiniMediator.Tests
         {
             // Arrange
             var mediator = new Mediator();
-            var consumer = Substitute.ForPartsOf<Consumer>(mediator);
+            var action = Substitute.For<IAction<Message>>();
+            var consumer = Substitute.ForPartsOf<Consumer>(mediator, action);
             var message = new Message
             {
                 Content = "This is a new message"
@@ -23,7 +24,26 @@ namespace MiniMediator.Tests
             mediator.Publish(message);
 
             // Assert
-            consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
+            action.Received(1).Invoke(Arg.Is<Message>(x => x == message));
+        }
+
+        [Fact]
+        public void WhenSendMessageBeforeSubscribe_ItShouldBeReceived()
+        {
+            // Arrange
+            var mediator = new Mediator();
+            var action = Substitute.For<IAction<Message>>();
+            var message = new Message
+            {
+                Content = "This is a new message"
+            };
+
+            // Act
+            mediator.Publish(message);
+            var consumer = Substitute.ForPartsOf<Consumer>(mediator, action);
+
+            // Assert
+            action.Received(1).Invoke(Arg.Is<Message>(x => x == message));
         }
 
         [Fact]
@@ -31,7 +51,7 @@ namespace MiniMediator.Tests
         {
             // Arrange
             var mediator = new Mediator();
-            var consumer = Substitute.ForPartsOf<Consumer>(mediator);
+            var consumer = Substitute.ForPartsOf<Consumer>(mediator, null);
             var differentConsumer = Substitute.ForPartsOf<DifferentConsumer>(mediator);
             var message = new DifferentMessage
             {
@@ -53,7 +73,7 @@ namespace MiniMediator.Tests
         {
             // Arrange
             var mediator = new Mediator();
-            var consumer = Substitute.ForPartsOf<Consumer>(mediator);
+            var consumer = Substitute.ForPartsOf<Consumer>(mediator, null);
             var differentConsumer = Substitute.ForPartsOf<DifferentConsumer>(mediator);
             var message = new Message
             {
@@ -73,7 +93,7 @@ namespace MiniMediator.Tests
         {
             // Arrange
             var mediator = new Mediator();
-            var consumer = Substitute.ForPartsOf<Consumer>(mediator);
+            var consumer = Substitute.ForPartsOf<Consumer>(mediator, null);
             var differentConsumer = Substitute.ForPartsOf<DifferentConsumer>(mediator);
             var message = new DifferentMessage
             {
@@ -92,14 +112,18 @@ namespace MiniMediator.Tests
 
         public class Consumer
         {
-            public Consumer(Mediator mediator)
+            private readonly IAction<Message> _action;
+
+            public Consumer(Mediator mediator, IAction<Message> action)
             {
+                _action = action;
                 mediator.Subscribe<Message>(Receive);
+                
             }
 
             public virtual void Receive(Message message)
             {
-
+                _action?.Invoke(message);
             }
         }
 
@@ -124,6 +148,11 @@ namespace MiniMediator.Tests
         public class DifferentMessage : Message
         {
             public int Sequence { get; set; }
+        }
+
+        public interface IAction<T>
+        {
+            void Invoke(T value);
         }
     }
 }
