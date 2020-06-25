@@ -56,6 +56,8 @@ namespace MiniMediator
                 observers.Add(typeof(TMessage), new BehaviourSubject<object>());
             }
 
+            // Currently the Cast extension method is the only reason the System.Reactive pacakge is needed.
+            // it looks non-trivial to implement.
             disposable = observers[typeof(TMessage)].Cast<TMessage>().Subscribe(subscription);
             return this;
         }

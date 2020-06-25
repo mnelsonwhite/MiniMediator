@@ -9,10 +9,11 @@ namespace MiniMediator
 {
     /// <summary>
     /// System.Reactive.Subjects.BehaviorSubject doesn't work as I would hope.
-    /// Ideally it would only invoke OnNext on new subscriptions when a values has already been set,
+    /// Ideally it would only invoke OnNext on new subscriptions when a value has been set,
     /// instead of having to set the initial value when constructing the subject.
     /// 
-    /// This makes a big difference since it avoid having to use a null initial value or dummy value.
+    /// This makes a big difference since it avoid having to use a null initial value or dummy value
+    /// to initialise the subject.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     internal class BehaviourSubject<T> : SubjectBase<T>

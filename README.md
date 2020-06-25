@@ -1,8 +1,8 @@
 # MiniMediator
 
 [![Build Status](https://dev.azure.com/atlanticblue/MiniMediator/_apis/build/status/mnelsonwhite.MiniMediator?branchName=master)](https://dev.azure.com/atlanticblue/MiniMediator/_build/latest?definitionId=4&branchName=master)
-[![Nuget MiniMediator](https://img.shields.io/badge/nuget_MiniMediator-v1.5.2-blue.svg)](https://www.nuget.org/packages/MiniMediator)
-[![Nuget MiniMediator.DependencyInjection](https://img.shields.io/badge/nuget_MiniMediator.DependencyInjection-v1.5.2-blue.svg)](https://www.nuget.org/packages/MiniMediator.DependencyInjection)
+[![Nuget MiniMediator](https://img.shields.io/badge/nuget_MiniMediator-v2.0.0-blue.svg)](https://www.nuget.org/packages/MiniMediator)
+[![Nuget MiniMediator.DependencyInjection](https://img.shields.io/badge/nuget_MiniMediator.DependencyInjection-v2.0.0-blue.svg)](https://www.nuget.org/packages/MiniMediator.DependencyInjection)
 
 A simple mediator that requires no setup, just publish messages and subscribe to messages.
 Helpful with event driven applications.
@@ -135,6 +135,25 @@ mediator.Publish<Message>(message);
 // Assert
 consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
 differentConsumer.DidNotReceive().DifferentReceive(Arg.Any<DifferentMessage>());
+```
+
+Late subscriptions will receive the last published message.
+
+``` c#
+// Arrange
+var mediator = new Mediator();
+var action = Substitute.For<IAction<Message>>();
+var message = new Message
+{
+    Content = "This is a new message"
+};
+
+// Act
+mediator.Publish(message);
+var consumer = Substitute.ForPartsOf<Consumer>(mediator, action);
+
+// Assert
+action.Received(1).Invoke(Arg.Is<Message>(x => x == message));
 ```
 
 ### Dependency Injection
