@@ -23,7 +23,7 @@ namespace MiniMediator
             return Publish(new TMessage());
         }
 
-        public Mediator Publish<TMessage>(TMessage message)
+        public virtual Mediator Publish<TMessage>(TMessage message)
         {
             OnPublished?.Invoke(this, new PublishEventArgs(message!));
             if (message == null) throw new ArgumentNullException(nameof(message));
