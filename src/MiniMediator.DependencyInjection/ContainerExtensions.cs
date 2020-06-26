@@ -1,7 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using MiniMediator;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -18,23 +22,21 @@ namespace Microsoft.Extensions.DependencyInjection
             var optionsInstance = new MediatorOptions();
             options(optionsInstance);
 
-            var handlerTypes = optionsInstance.Assemblies
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(type => type
-                    .GetInterfaces()
-                    .Any(iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
-                )
+            RegisterAssembly(services, optionsInstance);
+
+            var handlerTypes = services
+                .SelectMany(descriptor => descriptor.ServiceType.GetInterfaces().Select(iface => (type: descriptor.ServiceType, iface)))
+                .Where(serviceType => serviceType.iface.IsGenericType && serviceType.iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
+                .Select(serviceType => (serviceType.type, messageType: serviceType.iface.GetGenericArguments().Single()))
                 .ToArray();
 
-            foreach(var handlerType in handlerTypes)
-            {
-                services.TryAddTransient(handlerType);
-            }
-
-            services.TryAddTransient(provider => services);
             services.Add(
                 new ServiceDescriptor(
-                    typeof(Mediator), provider => bulidMediator(provider, optionsInstance),
+                    typeof(Mediator),
+                    provider => new ContainerMediator(
+                        provider,
+                        handlerTypes
+                    ),
                     optionsInstance.Lifetime
                 )
             );
@@ -42,41 +44,78 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        private static Mediator bulidMediator(IServiceProvider provider, MediatorOptions options)
+        private static void RegisterAssembly(IServiceCollection services, MediatorOptions options)
         {
-            var mediator = new Mediator();
-            if (options.PublishEventHandler != null) mediator.OnPublished += options.PublishEventHandler;
+            var handlerTypes = options.Assemblies
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(type => type
+                    .GetInterfaces()
+                    .Any(iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
+                )
+                .ToArray();
 
-            var services = provider.GetService<IServiceCollection>();
-            var subscribeMethod = typeof(Mediator).GetMethods().Where(
-                method =>
-                {
-                    if (
-                        method.Name != "Subscribe" ||
-                        !method.IsGenericMethod ||
-                        method.IsStatic ||
-                        !method.IsPublic ||
-                        method.GetParameters().Length != 1
-                    ) return false;
 
-                    var parameterType = method.GetParameters().Single().ParameterType;
-                    return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
-                }
-            ).Single();
-
-            var handlerTypes = services
-                .SelectMany(descriptor => descriptor.ServiceType.GetInterfaces().Select(iface => (type: descriptor.ServiceType, iface)))
-                .Where(serviceType => serviceType.iface.IsGenericType && serviceType.iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
-                .Select(serviceType => (serviceType.type, message: serviceType.iface.GetGenericArguments().Single()));
-
-            foreach (var handler in handlerTypes)
+            foreach (var handlerType in handlerTypes)
             {
-                var genericMethod = subscribeMethod.MakeGenericMethod(handler.message);
-                var handlerInstance = provider.GetService(handler.type);
-                genericMethod.Invoke(mediator, new object[] { handlerInstance });
+                services.TryAdd(new ServiceDescriptor(handlerType, handlerType, options.HandlerLifetime));
+            }
+        }
+
+        internal class ContainerMediator : Mediator
+        {
+            private object _lock = new object();
+            private bool _addedHandlers;
+            private readonly IServiceProvider _provider;
+            private readonly IReadOnlyCollection<(Type type, Type messageType)> _handlers;
+
+            public ContainerMediator(
+                IServiceProvider provider,
+                IReadOnlyCollection<(Type type, Type messageType)> handlers)
+            {
+                _provider = provider;
+                _handlers = handlers;
             }
 
-            return mediator;
+            public override Mediator Publish<TMessage>(TMessage message)
+            {
+                lock(_lock)
+                {
+                    if (!_addedHandlers)
+                    {
+                        _addedHandlers = true;
+                        AddHandlers();
+                    }
+                }
+
+                base.Publish(message);
+                return this;
+            }
+
+            private void AddHandlers()
+            {
+                var subscribeMethod = typeof(Mediator).GetMethods().Where(
+                    method =>
+                    {
+                        if (
+                            method.Name != nameof(Subscribe) ||
+                            !method.IsGenericMethod ||
+                            method.IsStatic ||
+                            !method.IsPublic ||
+                            method.GetParameters().Length != 1
+                        ) return false;
+
+                        var parameterType = method.GetParameters().Single().ParameterType;
+                        return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
+                    }
+                ).Single();
+
+                foreach (var handler in _handlers)
+                {
+                    var genericMethod = subscribeMethod.MakeGenericMethod(handler.messageType);
+                    var handlerInstance = _provider.GetService(handler.type);
+                    genericMethod.Invoke(this, new object[] { handlerInstance });
+                }
+            }
         }
     }
 }
