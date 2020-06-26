@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 
 namespace MiniMediator
 {
@@ -22,19 +20,21 @@ namespace MiniMediator
 
         private ImmutableList<IObserver<T>> _observers;
         private bool _isStopped;
-        private Settable<T> _value;
+        private T _value;
         private Exception _exception = default!;
         private bool _isDisposed;
+        private bool _isSet;
 
         public BehaviourSubject(T value)
         {
-            _value = new Settable<T>(value);
+            _value = value;
+            _isSet = true;
             _observers = ImmutableList<IObserver<T>>.Empty;
         }
 
         public BehaviourSubject()
         {
-            _value = new Settable<T>();
+            _value = default!;
             _observers = ImmutableList<IObserver<T>>.Empty;
         }
 
@@ -55,7 +55,7 @@ namespace MiniMediator
         {
             lock (_gate)
             {
-                if (_isDisposed)
+                if (_isDisposed || _isSet)
                 {
                     value = default!;
                     return false;
@@ -66,7 +66,7 @@ namespace MiniMediator
                     throw _exception;
                 }
 
-                value = _value.Value;
+                value = _value;
                 return true;
             }
         }
@@ -134,7 +134,8 @@ namespace MiniMediator
 
                 if (!_isStopped)
                 {
-                    _value.Value = value;
+                    _value = value;
+                    _isSet = true;
                     os = _observers.ToArray();
                 }
             }
@@ -164,7 +165,7 @@ namespace MiniMediator
                 if (!_isStopped)
                 {
                     _observers = _observers.Add(observer);
-                    if (_value.IsSet) observer.OnNext(_value.Value);
+                    if (_isSet) observer.OnNext(_value);
                     return new Subscription(this, observer);
                 }
 
