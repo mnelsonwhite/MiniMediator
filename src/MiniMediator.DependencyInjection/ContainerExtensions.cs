@@ -63,8 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         internal class ContainerMediator : Mediator
         {
-            private object _lock = new object();
-            private bool _addedHandlers;
+            private int _addedHandlers = 0;
             private readonly IServiceProvider _provider;
             private readonly IReadOnlyCollection<(Type type, Type messageType)> _handlers;
 
@@ -78,17 +77,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public override Mediator Publish<TMessage>(TMessage message)
             {
-                lock(_lock)
+                if (Interlocked.CompareExchange(ref _addedHandlers, 1, 0) == 0)
                 {
-                    if (!_addedHandlers)
-                    {
-                        _addedHandlers = true;
-                        AddHandlers();
-                    }
+                    AddHandlers();
                 }
-
-                base.Publish(message);
-                return this;
+                
+                return base.Publish(message);
             }
 
             private void AddHandlers()
