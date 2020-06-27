@@ -1,6 +1,8 @@
 ﻿using NSubstitute;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using Xunit;
 
@@ -107,6 +109,19 @@ namespace MiniMediator.Tests
             // Assert
             consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
             differentConsumer.DidNotReceive().DifferentReceive(Arg.Any<DifferentMessage>());
+        }
+
+        [Fact]
+        public void Test()
+        {
+            var publishMethod = typeof(Mediator)
+                .GetMethods()
+                .Where(method => method.Name == nameof(Mediator.Publish) &&
+                    method.IsGenericMethod &&
+                    method.GetGenericArguments().Length == 1 &&
+                    method.GetParameters().Length == 1
+                )
+                .Single();
         }
         
 

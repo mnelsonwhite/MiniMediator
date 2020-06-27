@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var handlerTypes = options.Assemblies
                 .SelectMany(assembly => assembly.GetTypes())
-                .Where(type => type
+                .Where(type => !type.IsAbstract && type
                     .GetInterfaces()
                     .Any(iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
                 )
