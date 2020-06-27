@@ -1,8 +1,8 @@
 # MiniMediator
 
 [![Build Status](https://dev.azure.com/atlanticblue/MiniMediator/_apis/build/status/mnelsonwhite.MiniMediator?branchName=master)](https://dev.azure.com/atlanticblue/MiniMediator/_build/latest?definitionId=4&branchName=master)
-[![Nuget MiniMediator](https://img.shields.io/badge/nuget_MiniMediator-v2.2.2-blue.svg)](https://www.nuget.org/packages/MiniMediator)
-[![Nuget MiniMediator.DependencyInjection](https://img.shields.io/badge/nuget_MiniMediator.DependencyInjection-v2.2.2-blue.svg)](https://www.nuget.org/packages/MiniMediator.DependencyInjection)
+[![Nuget MiniMediator](https://img.shields.io/badge/nuget_MiniMediator-v2.2.3-blue.svg)](https://www.nuget.org/packages/MiniMediator)
+[![Nuget MiniMediator.DependencyInjection](https://img.shields.io/badge/nuget_MiniMediator.DependencyInjection-v2.2.3-blue.svg)](https://www.nuget.org/packages/MiniMediator.DependencyInjection)
 
 A simple mediator that requires no setup, just publish messages and subscribe to messages.
 Helpful with event driven applications.

@@ -33,10 +33,19 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Add(
                 new ServiceDescriptor(
                     typeof(Mediator),
-                    provider => new ContainerMediator(
-                        provider,
-                        handlerTypes
-                    ),
+                    provider => {
+                        var mediator = new ContainerMediator(
+                            provider,
+                            handlerTypes
+                        );
+
+                        if (optionsInstance.PublishEventHandler != null)
+                        {
+                            mediator.OnPublished += optionsInstance.PublishEventHandler;
+                        }
+
+                        return mediator;
+                    },
                     optionsInstance.Lifetime
                 )
             );
