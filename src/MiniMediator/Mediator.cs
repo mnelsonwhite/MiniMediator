@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -7,15 +8,17 @@ namespace MiniMediator
 {
     public class Mediator
     {
-        /// <summary>
-        /// Callback on publish. Used for logging
-        /// </summary>
-        public event EventHandler<IPublishEventArgs>? OnPublished;
         private readonly IDictionary<Type, BehaviourSubject<object>> observers;
+        private readonly ILogger? _logger;
         
         public Mediator()
         {
             observers = new Dictionary<Type, BehaviourSubject<object>>();
+        }
+
+        public Mediator(ILogger logger) : this()
+        {
+            _logger = logger;
         }
 
         public Mediator Publish<TMessage>() where TMessage : new ()
@@ -25,7 +28,7 @@ namespace MiniMediator
 
         public virtual Mediator Publish<TMessage>(TMessage message)
         {
-            OnPublished?.Invoke(this, new PublishEventArgs(message!));
+            _logger?.LogDebug("Publishing {@Message}", message);
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var type = typeof(TMessage);
@@ -49,8 +52,9 @@ namespace MiniMediator
             return Subscribe(subscription, out _);
         }
 
-        public Mediator Subscribe<TMessage>(Action<TMessage> subscription, out IDisposable disposable)
+        public virtual Mediator Subscribe<TMessage>(Action<TMessage> subscription, out IDisposable disposable)
         {
+            _logger?.LogDebug("Subscribing {TMessage}", typeof(TMessage));
             if (!observers.ContainsKey(typeof(TMessage)))
             {
                 observers.Add(typeof(TMessage), new BehaviourSubject<object>());
@@ -64,6 +68,7 @@ namespace MiniMediator
 
         public Mediator Subscribe<TMessage>(IMessageHandler<TMessage> handler)
         {
+            _logger?.LogDebug("Subscribing {Handler}", handler);
             return Subscribe<TMessage>(message => handler.Handle(message));
         }
 
