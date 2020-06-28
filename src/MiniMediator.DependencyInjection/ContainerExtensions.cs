@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using MiniMediator;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
 
-    public static class ContainerExtensions
+    public static partial class ContainerExtensions
     {
         public static IServiceCollection AddMediator(this IServiceCollection services)
         {
@@ -36,13 +36,9 @@ namespace Microsoft.Extensions.DependencyInjection
                     provider => {
                         var mediator = new ContainerMediator(
                             provider,
-                            handlerTypes
+                            handlerTypes,
+                            provider.GetService<ILogger>()
                         );
-
-                        if (optionsInstance.PublishEventHandler != null)
-                        {
-                            mediator.OnPublished += optionsInstance.PublishEventHandler;
-                        }
 
                         return mediator;
                     },
@@ -67,57 +63,6 @@ namespace Microsoft.Extensions.DependencyInjection
             foreach (var handlerType in handlerTypes)
             {
                 services.TryAdd(new ServiceDescriptor(handlerType, handlerType, options.HandlerLifetime));
-            }
-        }
-
-        internal class ContainerMediator : Mediator
-        {
-            private int _addedHandlers = 0;
-            private readonly IServiceProvider _provider;
-            private readonly IReadOnlyCollection<(Type type, Type messageType)> _handlers;
-
-            public ContainerMediator(
-                IServiceProvider provider,
-                IReadOnlyCollection<(Type type, Type messageType)> handlers)
-            {
-                _provider = provider;
-                _handlers = handlers;
-            }
-
-            public override Mediator Publish<TMessage>(TMessage message)
-            {
-                if (Interlocked.CompareExchange(ref _addedHandlers, 1, 0) == 0)
-                {
-                    AddHandlers();
-                }
-                
-                return base.Publish(message);
-            }
-
-            private void AddHandlers()
-            {
-                var subscribeMethod = typeof(Mediator).GetMethods().Where(
-                    method =>
-                    {
-                        if (
-                            method.Name != nameof(Subscribe) ||
-                            !method.IsGenericMethod ||
-                            method.IsStatic ||
-                            !method.IsPublic ||
-                            method.GetParameters().Length != 1
-                        ) return false;
-
-                        var parameterType = method.GetParameters().Single().ParameterType;
-                        return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
-                    }
-                ).Single();
-
-                foreach (var handler in _handlers)
-                {
-                    var genericMethod = subscribeMethod.MakeGenericMethod(handler.messageType);
-                    var handlerInstance = _provider.GetService(handler.type);
-                    genericMethod.Invoke(this, new object[] { handlerInstance });
-                }
             }
         }
     }

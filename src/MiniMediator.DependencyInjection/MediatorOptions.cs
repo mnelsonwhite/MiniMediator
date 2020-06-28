@@ -10,7 +10,5 @@ namespace Microsoft.Extensions.DependencyInjection
         public ServiceLifetime Lifetime { get; set; } = ServiceLifetime.Singleton;
         public ServiceLifetime HandlerLifetime { get; set; } = ServiceLifetime.Singleton;
         public List<Assembly> Assemblies { get; } = new List<Assembly>();
-        public EventHandler<IPublishEventArgs> PublishEventHandler { get; set; } = null!;
-
     }
 }
