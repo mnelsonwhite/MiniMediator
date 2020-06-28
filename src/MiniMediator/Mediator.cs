@@ -74,8 +74,7 @@ namespace MiniMediator
 
         public Mediator Subscribe<THandler,TMessage>() where THandler : IMessageHandler<TMessage>, new()
         {
-            var handler = new THandler();
-            return Subscribe<TMessage>(message => handler.Handle(message));
+            return Subscribe(new THandler());
         }
     }
 }

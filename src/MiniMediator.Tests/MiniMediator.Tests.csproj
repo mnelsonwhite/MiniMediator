@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -8,7 +8,7 @@
     <PackageProjectUrl>https://github.com/mnelsonwhite/MiniMediator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mnelsonwhite/MiniMediator</RepositoryUrl>
     <NeutralLanguage>en-AU</NeutralLanguage>
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
