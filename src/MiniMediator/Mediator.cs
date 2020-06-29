@@ -10,15 +10,17 @@ namespace MiniMediator
     {
         private readonly IDictionary<Type, BehaviourSubject<object>> observers;
         private readonly ILogger? _logger;
-        
+        private readonly LogLevel? _loggingLevel;
+
         public Mediator()
         {
             observers = new Dictionary<Type, BehaviourSubject<object>>();
         }
 
-        public Mediator(ILogger logger) : this()
+        public Mediator(ILogger logger, LogLevel? loggingLevel = null) : this()
         {
             _logger = logger;
+            _loggingLevel = loggingLevel;
         }
 
         public Mediator Publish<TMessage>() where TMessage : new ()
@@ -28,7 +30,11 @@ namespace MiniMediator
 
         public virtual Mediator Publish<TMessage>(TMessage message)
         {
-            _logger?.LogDebug("Publishing {@Message}", message);
+            if (_loggingLevel.HasValue) _logger?.Log(
+                _loggingLevel.Value,
+                "Publishing {@Message}",
+                message
+            );
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var type = typeof(TMessage);
@@ -54,7 +60,12 @@ namespace MiniMediator
 
         public virtual Mediator Subscribe<TMessage>(Action<TMessage> subscription, out IDisposable disposable)
         {
-            _logger?.LogDebug("Subscribing {TMessage}", typeof(TMessage));
+            if (_loggingLevel.HasValue) _logger?.Log(
+                _loggingLevel.Value,
+                "Subscribing {TMessage}",
+                typeof(TMessage)
+            );
+
             if (!observers.ContainsKey(typeof(TMessage)))
             {
                 observers.Add(typeof(TMessage), new BehaviourSubject<object>());
@@ -68,7 +79,12 @@ namespace MiniMediator
 
         public Mediator Subscribe<TMessage>(IMessageHandler<TMessage> handler)
         {
-            _logger?.LogDebug("Subscribing {Handler}", handler);
+            if (_loggingLevel.HasValue) _logger?.Log(
+                _loggingLevel.Value,
+                "Subscribing {Handler}",
+                handler
+            );
+
             return Subscribe<TMessage>(message => handler.Handle(message));
         }
 
