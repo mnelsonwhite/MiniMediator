@@ -19,7 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection
             public ContainerMediator(
                 IServiceProvider provider,
                 IReadOnlyCollection<(Type type, Type messageType)> handlers,
-                ILogger logger) : base(logger)
+                ILogger<Mediator> logger,
+                LogLevel? loggingLevel = null) : base(logger, loggingLevel)
             {
                 _provider = provider;
                 _handlers = handlers;

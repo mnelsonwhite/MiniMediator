@@ -37,7 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
                         var mediator = new ContainerMediator(
                             provider,
                             handlerTypes,
-                            provider.GetService<ILogger>()
+                            provider.GetService<ILogger<Mediator>>(),
+                            optionsInstance.LoggingLevel
                         );
 
                         return mediator;
