@@ -18,6 +18,7 @@ namespace MiniMediator.DependencyInjection.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(p => Substitute.For<ILogger>());
             serviceCollection.AddSingleton(provider => Substitute.For<IAction<TestMessage>>());
+            serviceCollection.AddSingleton(provider => Substitute.For<IAction<SecondTestMessage>>());
             serviceCollection.AddMediator(config => config.Assemblies.Add(GetType().Assembly));
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
@@ -30,9 +31,11 @@ namespace MiniMediator.DependencyInjection.Tests
 
             // Act
             _serviceProvider.GetService<Mediator>().Publish(new TestMessage());
+            _serviceProvider.GetService<Mediator>().Publish(new SecondTestMessage());
 
             // Assert
             _serviceProvider.GetService<IAction<TestMessage>>().Received(1).Invoke(Arg.Any<TestMessage>());
+            _serviceProvider.GetService<IAction<SecondTestMessage>>().Received(1).Invoke(Arg.Any<SecondTestMessage>());
         }
     }
 }

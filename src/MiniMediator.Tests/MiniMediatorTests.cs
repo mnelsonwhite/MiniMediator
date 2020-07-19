@@ -1,9 +1,11 @@
 ﻿using NSubstitute;
+using NSubstitute.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace MiniMediator.Tests
@@ -109,6 +111,46 @@ namespace MiniMediator.Tests
             // Assert
             consumer.Received(1).Receive(Arg.Is<Message>(x => x == message));
             differentConsumer.DidNotReceive().DifferentReceive(Arg.Any<DifferentMessage>());
+        }
+
+        [Fact]
+        public async Task WhenAsyncHandler_ShouldBeHandled()
+        {
+            // Arrange
+            var mediator = new Mediator();
+            var handler = Substitute.For<IMessageHandlerAsync<Message>>();
+            var message = new Message
+            {
+                Content = "This is a new message"
+            };
+            mediator.SubscribeAsync(handler);
+
+            // Act
+            mediator.Publish(message);
+
+            // Assert
+            await handler.Received(1).Handle(Arg.Is<Message>(x => x == message));
+        }
+
+        [Fact]
+        public async Task WhenAsyncHandlerException_ShouldBeHandled()
+        {
+            // Arrange
+            var mediator = new Mediator();
+            var errorHandler = Substitute.For<IMessageHandler<ExceptionMessage>>();
+            var handler = Substitute.For<IMessageHandlerAsync<Message>>();
+            handler.Handle(Arg.Any<Message>()).Returns(Task.FromException(new Exception("Error")));
+            mediator.SubscribeAsync(handler);
+            mediator.Subscribe(errorHandler);
+
+            // Act
+            mediator.Publish(new Message());
+
+            // Assert
+            await handler.Received(1).Handle(Arg.Any<Message>());
+            errorHandler.Received(1).Handle(
+                Arg.Is<ExceptionMessage>(exMsg => exMsg.Exception.Message == "Error")
+            );
         }
 
         [Fact]

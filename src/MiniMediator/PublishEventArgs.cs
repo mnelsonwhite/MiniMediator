@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MiniMediator
+﻿namespace MiniMediator
 {
     internal class PublishEventArgs : IPublishEventArgs
     {

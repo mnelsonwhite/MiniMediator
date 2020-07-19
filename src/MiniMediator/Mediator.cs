@@ -2,7 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace MiniMediator
 {
@@ -58,6 +61,11 @@ namespace MiniMediator
             return Subscribe(subscription, out _);
         }
 
+        public Mediator SubscribeAsync<TMessage>(Func<TMessage, Task> subscription)
+        {
+            return SubscribeAsync(subscription, out _);
+        }
+
         public virtual Mediator Subscribe<TMessage>(Action<TMessage> subscription, out IDisposable disposable)
         {
             if (_loggingLevel.HasValue) _logger?.Log(
@@ -73,7 +81,47 @@ namespace MiniMediator
 
             // Currently the Cast extension method is the only reason the System.Reactive pacakge is needed.
             // it looks non-trivial to implement.
-            disposable = observers[typeof(TMessage)].Cast<TMessage>().Subscribe(subscription);
+            disposable = observers[typeof(TMessage)].Cast<TMessage>().Subscribe(message => {
+                try
+                {
+                    subscription(message);
+                }
+                catch(Exception ex)
+                {
+                    Publish(new ExceptionMessage<TMessage>(ex, message));
+                    Publish(new ExceptionMessage(ex, message!));
+                }
+            });
+
+            return this;
+        }
+
+        public virtual Mediator SubscribeAsync<TMessage>(Func<TMessage,Task> subscription, out IDisposable disposable)
+        {
+            if (_loggingLevel.HasValue) _logger?.Log(
+                _loggingLevel.Value,
+                "Subscribing {TMessage}",
+                typeof(TMessage)
+            );
+
+            if (!observers.ContainsKey(typeof(TMessage)))
+            {
+                observers.Add(typeof(TMessage), new BehaviourSubject<object>());
+            }
+
+            disposable = observers[typeof(TMessage)]
+                .Cast<TMessage>()
+                .Select(message => Observable
+                    .FromAsync(() => subscription.Invoke(message))
+                    .Catch<Unit,Exception>(ex => {
+                        Publish(new ExceptionMessage<TMessage>(ex, message));
+                        Publish(new ExceptionMessage(ex, message!));
+                        return Observable.Return(Unit.Default);
+                    })
+                )
+                .Concat()
+                .Subscribe();
+
             return this;
         }
 
@@ -88,9 +136,25 @@ namespace MiniMediator
             return Subscribe<TMessage>(message => handler.Handle(message));
         }
 
+        public Mediator SubscribeAsync<TMessage>(IMessageHandlerAsync<TMessage> handler)
+        {
+            if (_loggingLevel.HasValue) _logger?.Log(
+                _loggingLevel.Value,
+                "Subscribing {Handler}",
+                handler
+            );
+
+            return SubscribeAsync<TMessage>(message => handler.Handle(message));
+        }
+
         public Mediator Subscribe<THandler,TMessage>() where THandler : IMessageHandler<TMessage>, new()
         {
             return Subscribe(new THandler());
+        }
+
+        public Mediator SubscribeAsync<THandler, TMessage>() where THandler : IMessageHandlerAsync<TMessage>, new()
+        {
+            return SubscribeAsync(new THandler());
         }
     }
 }
