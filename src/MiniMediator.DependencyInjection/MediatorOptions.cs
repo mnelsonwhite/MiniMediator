@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using MiniMediator;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 

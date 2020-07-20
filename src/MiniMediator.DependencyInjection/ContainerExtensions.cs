@@ -2,10 +2,8 @@
 using Microsoft.Extensions.Logging;
 using MiniMediator;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -26,7 +24,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var handlerTypes = services
                 .SelectMany(descriptor => descriptor.ServiceType.GetInterfaces().Select(iface => (type: descriptor.ServiceType, iface)))
-                .Where(serviceType => serviceType.iface.IsGenericType && serviceType.iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
+                .Where(serviceType =>
+                    serviceType.iface.IsGenericType &&
+                    (serviceType.iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>) ||
+                    serviceType.iface.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>))
+                )
                 .Select(serviceType => (serviceType.type, messageType: serviceType.iface.GetGenericArguments().Single()))
                 .ToArray();
 
@@ -56,7 +58,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 .SelectMany(assembly => assembly.GetTypes())
                 .Where(type => !type.IsAbstract && type
                     .GetInterfaces()
-                    .Any(iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
+                    .Any(iface =>
+                        iface.IsGenericType &&
+                        (iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>) ||
+                        iface.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>))
+                    )
                 )
                 .ToArray();
 

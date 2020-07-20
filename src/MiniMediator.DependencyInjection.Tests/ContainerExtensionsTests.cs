@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using System;
-using System.Collections.Generic;
-using System.Security.Authentication.ExtendedProtection;
-using System.Text;
 using Xunit;
 
 namespace MiniMediator.DependencyInjection.Tests
@@ -34,8 +30,10 @@ namespace MiniMediator.DependencyInjection.Tests
             _serviceProvider.GetService<Mediator>().Publish(new SecondTestMessage());
 
             // Assert
-            _serviceProvider.GetService<IAction<TestMessage>>().Received(1).Invoke(Arg.Any<TestMessage>());
+            _serviceProvider.GetService<IAction<TestMessage>>().Received(2).Invoke(Arg.Any<TestMessage>());
             _serviceProvider.GetService<IAction<SecondTestMessage>>().Received(1).Invoke(Arg.Any<SecondTestMessage>());
         }
+
+
     }
 }

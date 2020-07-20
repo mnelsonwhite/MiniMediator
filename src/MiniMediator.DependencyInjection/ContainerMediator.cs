@@ -3,6 +3,7 @@ using MiniMediator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -10,6 +11,38 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public static partial class ContainerExtensions
     {
+        private static readonly MethodInfo _subscribeMethod = typeof(Mediator).GetMethods().Where(
+            method =>
+            {
+                if (
+                    method.Name != nameof(Mediator.Subscribe) ||
+                    !method.IsGenericMethod ||
+                    method.IsStatic ||
+                    !method.IsPublic ||
+                    method.GetParameters().Length != 1
+                ) return false;
+
+                var parameterType = method.GetParameters().Single().ParameterType;
+                return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
+            }
+        ).Single();
+
+        private static readonly MethodInfo _subscribeAsyncMethod = typeof(Mediator).GetMethods().Where(
+            method =>
+            {
+                if (
+                    method.Name != nameof(Mediator.SubscribeAsync) ||
+                    !method.IsGenericMethod ||
+                    method.IsStatic ||
+                    !method.IsPublic ||
+                    method.GetParameters().Length != 1
+                ) return false;
+
+                var parameterType = method.GetParameters().Single().ParameterType;
+                return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>);
+            }
+        ).Single();
+
         internal class ContainerMediator : Mediator
         {
             private int _addedHandlers = 0;
@@ -32,34 +65,32 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     AddHandlers();
                 }
-                
+
                 return base.Publish(message);
             }
 
             private void AddHandlers()
             {
-                var subscribeMethod = typeof(Mediator).GetMethods().Where(
-                    method =>
-                    {
-                        if (
-                            method.Name != nameof(Subscribe) ||
-                            !method.IsGenericMethod ||
-                            method.IsStatic ||
-                            !method.IsPublic ||
-                            method.GetParameters().Length != 1
-                        ) return false;
-
-                        var parameterType = method.GetParameters().Single().ParameterType;
-                        return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
-                    }
-                ).Single();
-
                 foreach (var handler in _handlers)
                 {
-                    var genericMethod = subscribeMethod.MakeGenericMethod(handler.messageType);
+                    var genericMethod = GetMethodInfo(handler.type).MakeGenericMethod(handler.messageType);
                     var handlerInstance = _provider.GetService(handler.type);
                     genericMethod.Invoke(this, new object[] { handlerInstance });
                 }
+            }
+
+            private MethodInfo GetMethodInfo(Type handlerType)
+            {
+                if (handlerType.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IMessageHandler<>)))
+                {
+                    return _subscribeMethod!;
+                }
+                else if (handlerType.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>)))
+                {
+                    return _subscribeAsyncMethod!;
+                }
+
+                throw new InvalidCastException("Unsupported handler type");
             }
         }
     }
