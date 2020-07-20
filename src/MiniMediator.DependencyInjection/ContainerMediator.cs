@@ -81,11 +81,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             private MethodInfo GetMethodInfo(Type handlerType)
             {
-                if (handlerType.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IMessageHandler<>)))
+                if (handlerType.GetInterfaces().Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IMessageHandler<>)))
                 {
                     return _subscribeMethod!;
                 }
-                else if (handlerType.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>)))
+                else if (handlerType.GetInterfaces().Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>)))
                 {
                     return _subscribeAsyncMethod!;
                 }
