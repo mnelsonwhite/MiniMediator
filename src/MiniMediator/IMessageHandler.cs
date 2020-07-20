@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MiniMediator
+﻿namespace MiniMediator
 {
     public interface IMessageHandler<TMessage>
     {
