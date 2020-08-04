@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MiniMediator
 {
-    public class Mediator
+    public class Mediator : IMediator
     {
         private readonly IDictionary<Type, BehaviourSubject<object>> observers;
         private readonly ILogger? _logger;
@@ -25,12 +26,7 @@ namespace MiniMediator
             _loggingLevel = loggingLevel;
         }
 
-        public Mediator Publish<TMessage>() where TMessage : new ()
-        {
-            return Publish(new TMessage());
-        }
-
-        public virtual Mediator Publish<TMessage>(TMessage message)
+        public virtual IMediator Publish<TMessage>(TMessage message)
         {
             if (_loggingLevel.HasValue) _logger?.Log(
                 _loggingLevel.Value,
@@ -55,17 +51,7 @@ namespace MiniMediator
             return this;
         }
 
-        public Mediator Subscribe<TMessage>(Action<TMessage> subscription)
-        {
-            return Subscribe(subscription, out _);
-        }
-
-        public Mediator SubscribeAsync<TMessage>(Func<TMessage, Task> subscription)
-        {
-            return SubscribeAsync(subscription, out _);
-        }
-
-        public virtual Mediator Subscribe<TMessage>(Action<TMessage> subscription, out IDisposable disposable)
+        public virtual IMediator Subscribe<TMessage>(Action<TMessage> subscription, out IDisposable disposable)
         {
             if (_loggingLevel.HasValue) _logger?.Log(
                 _loggingLevel.Value,
@@ -80,22 +66,24 @@ namespace MiniMediator
 
             // Currently the Cast extension method is the only reason the System.Reactive pacakge is needed.
             // it looks non-trivial to implement.
-            disposable = observers[typeof(TMessage)].Cast<TMessage>().Subscribe(message => {
-                try
-                {
-                    subscription(message);
-                }
-                catch(Exception ex)
-                {
-                    Publish(new ExceptionMessage<TMessage>(ex, message));
-                    Publish(new ExceptionMessage(ex, message!));
-                }
-            });
+            disposable = observers[typeof(TMessage)]
+                .Cast<TMessage>()
+                .Subscribe(message => {
+                    try
+                    {
+                        subscription(message);
+                    }
+                    catch(Exception ex)
+                    {
+                        Publish(new ExceptionMessage<TMessage>(ex, message));
+                        Publish(new ExceptionMessage(ex, message!));
+                    }
+                });
 
             return this;
         }
 
-        public virtual Mediator SubscribeAsync<TMessage>(Func<TMessage,Task> subscription, out IDisposable disposable)
+        public virtual IMediator SubscribeAsync<TMessage>(Func<TMessage,Task> subscription, out IDisposable disposable)
         {
             if (_loggingLevel.HasValue) _logger?.Log(
                 _loggingLevel.Value,
@@ -124,36 +112,84 @@ namespace MiniMediator
             return this;
         }
 
-        public Mediator Subscribe<TMessage>(IMessageHandler<TMessage> handler)
+        public IMediatorSubscribable<TMessage> Where<TMessage>(Func<TMessage, bool> predicate)
         {
-            if (_loggingLevel.HasValue) _logger?.Log(
-                _loggingLevel.Value,
-                "Subscribing {Handler}",
-                handler
+            return new WhereSubscribable<TMessage>(this, predicate);
+        }
+
+        private class WhereSubscribable<TMessage> : IMediatorSubscribable<TMessage>
+        {
+            private readonly Mediator _mediator;
+            private readonly Func<TMessage, bool> _predicate;
+
+            public WhereSubscribable(Mediator mediator, Func<TMessage, bool> predicate)
+            {
+                _mediator = mediator;
+                _predicate = predicate;
+            }
+            public IMediator Subscribe(Action<TMessage> subscription, out IDisposable disposable)
+            {
+                if (_mediator._loggingLevel.HasValue) _mediator._logger?.Log(
+                _mediator._loggingLevel.Value,
+                "Subscribing {TMessage}",
+                typeof(TMessage)
             );
 
-            return Subscribe<TMessage>(message => handler.Handle(message));
-        }
+                if (!_mediator.observers.ContainsKey(typeof(TMessage)))
+                {
+                    _mediator.observers.Add(typeof(TMessage), new BehaviourSubject<object>());
+                }
 
-        public Mediator SubscribeAsync<TMessage>(IMessageHandlerAsync<TMessage> handler)
-        {
-            if (_loggingLevel.HasValue) _logger?.Log(
-                _loggingLevel.Value,
-                "Subscribing {Handler}",
-                handler
-            );
+                // Currently the Cast extension method is the only reason the System.Reactive pacakge is needed.
+                // it looks non-trivial to implement.
+                disposable = _mediator
+                    .observers[typeof(TMessage)]
+                    .Cast<TMessage>()
+                    .Where(_predicate)
+                    .Subscribe(message => {
+                        try
+                        {
+                            subscription(message);
+                        }
+                        catch (Exception ex)
+                        {
+                            _mediator.Publish(new ExceptionMessage<TMessage>(ex, message));
+                            _mediator.Publish(new ExceptionMessage(ex, message!));
+                        }
+                    });
 
-            return SubscribeAsync<TMessage>(message => handler.Handle(message));
-        }
+                return _mediator;
+            }
 
-        public Mediator Subscribe<THandler,TMessage>() where THandler : IMessageHandler<TMessage>, new()
-        {
-            return Subscribe(new THandler());
-        }
+            public IMediator SubscribeAsync(Func<TMessage, Task> subscription, out IDisposable disposable)
+            {
+                if (_mediator._loggingLevel.HasValue) _mediator._logger?.Log(
+                    _mediator._loggingLevel.Value,
+                    "Subscribing {TMessage}",
+                    typeof(TMessage)
+                );
 
-        public Mediator SubscribeAsync<THandler, TMessage>() where THandler : IMessageHandlerAsync<TMessage>, new()
-        {
-            return SubscribeAsync(new THandler());
+                if (!_mediator.observers.ContainsKey(typeof(TMessage)))
+                {
+                    _mediator.observers.Add(typeof(TMessage), new BehaviourSubject<object>());
+                }
+
+                disposable = _mediator.observers[typeof(TMessage)]
+                    .Cast<TMessage>()
+                    .Where(_predicate)
+                    .Select(message => Observable
+                        .FromAsync(() => subscription.Invoke(message))
+                        .Catch<Unit, Exception>(ex => {
+                            _mediator.Publish(new ExceptionMessage<TMessage>(ex, message));
+                            _mediator.Publish(new ExceptionMessage(ex, message!));
+                            return Observable.Return(Unit.Default);
+                        })
+                    )
+                    .Concat()
+                    .Subscribe();
+
+                return _mediator;
+            }
         }
     }
 }

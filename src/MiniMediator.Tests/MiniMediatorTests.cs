@@ -150,16 +150,21 @@ namespace MiniMediator.Tests
         }
 
         [Fact]
-        public void Test()
+        public void WhenFilterByWherePredicate_ShouldBeExpected()
         {
-            var publishMethod = typeof(Mediator)
-                .GetMethods()
-                .Where(method => method.Name == nameof(Mediator.Publish) &&
-                    method.IsGenericMethod &&
-                    method.GetGenericArguments().Length == 1 &&
-                    method.GetParameters().Length == 1
-                )
-                .Single();
+            // Arrange
+            var mediator = new Mediator();
+            var action = Substitute.For<IAction<Message>>();
+
+            // Act
+            mediator.Where<Message>(m => m.Content == "5").Subscribe(m => action.Invoke(m));
+            for(int i = 0; i <= 10; i++)
+            {
+                mediator.Publish(new Message { Content = i.ToString() });
+            }
+            
+            // Assert
+            action.Received(1).Invoke(Arg.Is<Message>(x => x.Content == "5"));
         }
         
 
