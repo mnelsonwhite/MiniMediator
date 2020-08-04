@@ -11,35 +11,43 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public static partial class ContainerExtensions
     {
-        private static readonly MethodInfo _subscribeMethod = typeof(Mediator).GetMethods().Where(
+        private static readonly MethodInfo _subscribeMethod = typeof(MediatorExtensions).GetMethods().Where(
             method =>
             {
                 if (
-                    method.Name != nameof(Mediator.Subscribe) ||
-                    !method.IsGenericMethod ||
-                    method.IsStatic ||
-                    !method.IsPublic ||
-                    method.GetParameters().Length != 1
-                ) return false;
+                    method.Name == nameof(MediatorExtensions.Subscribe) &&
+                    method.IsGenericMethod &&
+                    method.IsStatic &&
+                    method.IsPublic &&
+                    method.GetParameters().Length == 2
+                )
+                {
+                    return method.GetParameters()
+                        .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
+                        .Count() == 1;
+                }
 
-                var parameterType = method.GetParameters().Single().ParameterType;
-                return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
+                return false;
             }
         ).Single();
 
-        private static readonly MethodInfo _subscribeAsyncMethod = typeof(Mediator).GetMethods().Where(
+        private static readonly MethodInfo _subscribeAsyncMethod = typeof(MediatorExtensions).GetMethods().Where(
             method =>
             {
                 if (
-                    method.Name != nameof(Mediator.SubscribeAsync) ||
-                    !method.IsGenericMethod ||
-                    method.IsStatic ||
-                    !method.IsPublic ||
-                    method.GetParameters().Length != 1
-                ) return false;
+                    method.Name == nameof(MediatorExtensions.SubscribeAsync) &&
+                    method.IsGenericMethod &&
+                    method.IsStatic &&
+                    method.IsPublic &&
+                    method.GetParameters().Length == 2
+                )
+                {
+                    return method.GetParameters()
+                        .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>))
+                        .Count() == 1;
+                }
 
-                var parameterType = method.GetParameters().Single().ParameterType;
-                return parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>);
+                return false;
             }
         ).Single();
 
@@ -52,14 +60,14 @@ namespace Microsoft.Extensions.DependencyInjection
             public ContainerMediator(
                 IServiceProvider provider,
                 IReadOnlyCollection<(Type type, Type messageType)> handlers,
-                ILogger<Mediator> logger,
+                ILogger<IMediator> logger,
                 LogLevel? loggingLevel = null) : base(logger, loggingLevel)
             {
                 _provider = provider;
                 _handlers = handlers;
             }
 
-            public override Mediator Publish<TMessage>(TMessage message)
+            public override IMediator Publish<TMessage>(TMessage message)
             {
                 if (Interlocked.CompareExchange(ref _addedHandlers, 1, 0) == 0)
                 {
@@ -75,7 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     var genericMethod = GetMethodInfo(handler.type).MakeGenericMethod(handler.messageType);
                     var handlerInstance = _provider.GetService(handler.type);
-                    genericMethod.Invoke(this, new object[] { handlerInstance });
+                    genericMethod.Invoke(null, new object[] { this, handlerInstance });
                 }
             }
 

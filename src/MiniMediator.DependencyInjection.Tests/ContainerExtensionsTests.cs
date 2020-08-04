@@ -26,8 +26,8 @@ namespace MiniMediator.DependencyInjection.Tests
             // in ctor
 
             // Act
-            _serviceProvider.GetService<Mediator>().Publish(new TestMessage());
-            _serviceProvider.GetService<Mediator>().Publish(new SecondTestMessage());
+            _serviceProvider.GetService<IMediator>().Publish(new TestMessage());
+            _serviceProvider.GetService<IMediator>().Publish(new SecondTestMessage());
 
             // Assert
             _serviceProvider.GetService<IAction<TestMessage>>().Received(2).Invoke(Arg.Any<TestMessage>());

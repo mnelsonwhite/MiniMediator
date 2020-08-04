@@ -34,12 +34,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.Add(
                 new ServiceDescriptor(
-                    typeof(Mediator),
+                    typeof(IMediator),
                     provider => {
                         var mediator = new ContainerMediator(
                             provider,
                             handlerTypes,
-                            provider.GetService<ILogger<Mediator>>(),
+                            provider.GetService<ILogger<IMediator>>(),
                             optionsInstance.LoggingLevel
                         );
 
