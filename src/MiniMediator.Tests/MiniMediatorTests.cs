@@ -166,6 +166,26 @@ namespace MiniMediator.Tests
             // Assert
             action.Received(1).Invoke(Arg.Is<Message>(x => x.Content == "5"));
         }
+
+        [Fact]
+        public void WhenFilteredHandler_ShouldBeFilteredHandling()
+        {
+            // Arrange
+            var mediator = new Mediator();
+            var filteredHandler = Substitute.For<IFilteredMessageHandler<Message>>();
+            var handler = Substitute.For<IMessageHandler<Message>>();
+            filteredHandler.Predicate.Returns(m => m.Content == "true");
+
+            // Act
+            mediator.Subscribe(filteredHandler);
+            mediator.Subscribe(handler);
+            mediator.Publish(new Message { Content = "false" });
+            mediator.Publish(new Message { Content = "true" });
+
+            // Assert
+            filteredHandler.Received(1).Handle(Arg.Is<Message>(m => m.Content == "true"));
+            handler.Received(2).Handle(Arg.Any<Message>());
+        }
         
 
         public class Consumer

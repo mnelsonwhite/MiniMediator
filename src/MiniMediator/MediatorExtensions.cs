@@ -17,7 +17,6 @@ namespace MiniMediator
         {
             return mediator.SubscribeAsync(subscription, out _);
         }
-
         public static IMediator Subscribe<TMessage>(this IMediatorSubscribable<TMessage> mediator, Action<TMessage> subscription)
         {
             return mediator.Subscribe(subscription, out _);
@@ -26,26 +25,25 @@ namespace MiniMediator
         {
             return mediator.SubscribeAsync(subscription, out _);
         }
-
         public static IMediator Subscribe<TMessage>(this IMediator mediator, IMessageHandler<TMessage> handler)
         {
             return mediator.Subscribe<TMessage>(message => handler.Handle(message));
         }
-        
         public static IMediator SubscribeAsync<TMessage>(this IMediator mediator, IMessageHandlerAsync<TMessage> handler)
         {
             return mediator.SubscribeAsync<TMessage>(message => handler.Handle(message));
         }
-        public static IMediator Subscribe<THandler, TMessage>(this IMediator mediator) where THandler : IMessageHandler<TMessage>, new()
+        public static IMediator Subscribe<TMessage>(this IMediator mediator, IFilteredMessageHandler<TMessage> handler)
         {
-            return mediator.Subscribe(new THandler());
+            return mediator
+                .Where(handler.Predicate)
+                .Subscribe(message => handler.Handle(message));
         }
-
-        public static IMediator SubscribeAsync<THandler, TMessage>(this IMediator mediator) where THandler : IMessageHandlerAsync<TMessage>, new()
+        public static IMediator SubscribeAsync<TMessage>(this IMediator mediator, IFilteredMessageHandlerAsync<TMessage> handler)
         {
-            return mediator.SubscribeAsync(new THandler());
+            return mediator
+                .Where(handler.Predicate)
+                .SubscribeAsync(message => handler.Handle(message));
         }
-
-        
     }
 }
