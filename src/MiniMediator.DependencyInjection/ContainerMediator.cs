@@ -11,6 +11,45 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public static partial class ContainerExtensions
     {
+        private static readonly MethodInfo _subscribeFilteredMethod = typeof(MediatorExtensions).GetMethods().Where(
+               method =>
+               {
+                   if (
+                       method.Name == nameof(MediatorExtensions.Subscribe) &&
+                       method.IsGenericMethod &&
+                       method.IsStatic &&
+                       method.IsPublic &&
+                       method.GetParameters().Length == 2
+                   )
+                   {
+                       return method.GetParameters()
+                           .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IFilteredMessageHandler<>))
+                           .Count() == 1;
+                   }
+
+                   return false;
+               }
+           ).Single();
+
+        private static readonly MethodInfo _subscribeAsyncFilteredMethod = typeof(MediatorExtensions).GetMethods().Where(
+            method =>
+            {
+                if (
+                    method.Name == nameof(MediatorExtensions.SubscribeAsync) &&
+                    method.IsGenericMethod &&
+                    method.IsStatic &&
+                    method.IsPublic &&
+                    method.GetParameters().Length == 2
+                )
+                {
+                    return method.GetParameters()
+                        .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IFilteredMessageHandlerAsync<>))
+                        .Count() == 1;
+                }
+
+                return false;
+            }
+        ).Single();
         private static readonly MethodInfo _subscribeMethod = typeof(MediatorExtensions).GetMethods().Where(
             method =>
             {
@@ -89,16 +128,33 @@ namespace Microsoft.Extensions.DependencyInjection
 
             private MethodInfo GetMethodInfo(Type handlerType)
             {
-                if (handlerType.GetInterfaces().Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IMessageHandler<>)))
+                if (CheckHandlerType(handlerType, typeof(IFilteredMessageHandler<>)))
+                {
+                    return _subscribeFilteredMethod!;
+                }
+                else if (CheckHandlerType(handlerType, typeof(IFilteredMessageHandlerAsync<>)))
+                {
+                    return _subscribeAsyncFilteredMethod!;
+                }
+                else if (CheckHandlerType(handlerType, typeof(IMessageHandler<>)))
                 {
                     return _subscribeMethod!;
                 }
-                else if (handlerType.GetInterfaces().Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>)))
+                else if (CheckHandlerType(handlerType, typeof(IMessageHandlerAsync<>)))
                 {
                     return _subscribeAsyncMethod!;
                 }
 
                 throw new InvalidCastException("Unsupported handler type");
+            }
+
+            private static bool CheckHandlerType(Type handlerType, Type handlerInterfaceType)
+            {
+                return handlerType.IsGenericType &&
+                    handlerType.GetGenericTypeDefinition() == handlerInterfaceType ||
+                    handlerType.GetInterfaces().Any(
+                        t => t.IsGenericType && t.GetGenericTypeDefinition() == handlerInterfaceType
+                    );
             }
         }
     }

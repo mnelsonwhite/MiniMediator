@@ -10,6 +10,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public static partial class ContainerExtensions
     {
+        private static Type[] _handlerGenericTypes = new[] {
+            typeof(IFilteredMessageHandler<>),
+            typeof(IFilteredMessageHandlerAsync<>),
+            typeof(IMessageHandler<>),
+            typeof(IMessageHandlerAsync<>)
+        };
+
         public static IServiceCollection AddMediator(this IServiceCollection services)
         {
             return AddMediator(services, options => { });
@@ -18,18 +25,22 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddMediator(this IServiceCollection services, Action<MediatorOptions> options)
         {
             var optionsInstance = new MediatorOptions();
+            
             options(optionsInstance);
-
             RegisterAssembly(services, optionsInstance);
 
             var handlerTypes = services
-                .SelectMany(descriptor => descriptor.ServiceType.GetInterfaces().Select(iface => (type: descriptor.ServiceType, iface)))
+                .SelectMany(d => {
+                    var interfaces = d.ServiceType.GetInterfaces().Select(iface => (type: d.ServiceType, iface));
+                    return d.ServiceType.IsInterface
+                        ? interfaces.Concat(new[] { (type: d.ServiceType, iface: d.ServiceType) })
+                        : interfaces;
+                })
                 .Where(serviceType =>
-                    serviceType.iface.IsGenericType &&
-                    (serviceType.iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>) ||
-                    serviceType.iface.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>))
+                    { return serviceType.iface.IsGenericType && _handlerGenericTypes.Contains(serviceType.iface.GetGenericTypeDefinition()); }
                 )
                 .Select(serviceType => (serviceType.type, messageType: serviceType.iface.GetGenericArguments().Single()))
+                .Distinct()
                 .ToArray();
 
             services.Add(
@@ -59,13 +70,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Where(type => !type.IsAbstract && type
                     .GetInterfaces()
                     .Any(iface =>
-                        iface.IsGenericType &&
-                        (iface.GetGenericTypeDefinition() == typeof(IMessageHandler<>) ||
-                        iface.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>))
+                        iface.IsGenericType && _handlerGenericTypes.Contains(iface.GetGenericTypeDefinition())
                     )
                 )
                 .ToArray();
-
 
             foreach (var handlerType in handlerTypes)
             {
