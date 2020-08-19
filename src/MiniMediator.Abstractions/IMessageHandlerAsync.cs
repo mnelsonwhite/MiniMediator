@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace MiniMediator
+namespace MiniMediator.Abstractions
 {
     public interface IMessageHandlerAsync<TMessage>
     {

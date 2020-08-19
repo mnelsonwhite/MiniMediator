@@ -1,4 +1,4 @@
-﻿namespace MiniMediator
+﻿namespace MiniMediator.Abstractions
 {
     public interface IPublishEventArgs
     {

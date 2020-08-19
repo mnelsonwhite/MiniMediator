@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniMediator.DependencyInje
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniMediator.DependencyInjection.Tests", "MiniMediator.DependencyInjection.Tests\MiniMediator.DependencyInjection.Tests.csproj", "{1B293CFD-A3FE-4028-AD0E-8620B5ED6278}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMediator.Abstractions", "MiniMediator.Abstractions\MiniMediator.Abstractions.csproj", "{59FC8A4F-4D71-49ED-A8CF-2D856A8241D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{1B293CFD-A3FE-4028-AD0E-8620B5ED6278}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B293CFD-A3FE-4028-AD0E-8620B5ED6278}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B293CFD-A3FE-4028-AD0E-8620B5ED6278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59FC8A4F-4D71-49ED-A8CF-2D856A8241D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59FC8A4F-4D71-49ED-A8CF-2D856A8241D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59FC8A4F-4D71-49ED-A8CF-2D856A8241D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59FC8A4F-4D71-49ED-A8CF-2D856A8241D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

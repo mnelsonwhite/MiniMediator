@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MiniMediator
+namespace MiniMediator.Abstractions
 {
     public interface IFilteredMessageHandlerAsync<TMessage> : IMessageHandlerAsync<TMessage>
     {

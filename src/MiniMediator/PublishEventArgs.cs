@@ -1,4 +1,6 @@
-﻿namespace MiniMediator
+﻿using MiniMediator.Abstractions;
+
+namespace MiniMediator
 {
     internal class PublishEventArgs : IPublishEventArgs
     {
