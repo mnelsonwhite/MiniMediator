@@ -39,6 +39,12 @@ steps:
     packagesToPack: '**/MiniMediator.DependencyInjection.csproj'
     versioningScheme: 'off'
 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/MiniMediator.Abstractions.csproj'
+    versioningScheme: 'off'
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
