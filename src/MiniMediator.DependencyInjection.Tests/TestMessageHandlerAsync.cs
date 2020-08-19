@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using MiniMediator.Abstractions;
 
 namespace MiniMediator.DependencyInjection.Tests
 {

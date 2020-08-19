@@ -1,4 +1,6 @@
-﻿namespace MiniMediator.DependencyInjection.Tests
+﻿using MiniMediator.Abstractions;
+
+namespace MiniMediator.DependencyInjection.Tests
 {
     public class TestMessageHandler : IMessageHandler<TestMessage>, IMessageHandler<SecondTestMessage>
     {
