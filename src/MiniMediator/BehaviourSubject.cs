@@ -14,7 +14,7 @@ namespace MiniMediator
     /// to initialise the subject.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class BehaviourSubject<T> : SubjectBase<T>
+    public class BehaviourSubject<T> : SubjectBase<T>
     {
         private readonly object _gate = new object();
 
