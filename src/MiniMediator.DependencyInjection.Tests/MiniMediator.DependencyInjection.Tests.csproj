@@ -1,20 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Company />
     <Copyright>Matthew Nelson-White</Copyright>
     <PackageProjectUrl>https://github.com/mnelsonwhite/MiniMediator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mnelsonwhite/MiniMediator</RepositoryUrl>
     <NeutralLanguage>en-AU</NeutralLanguage>
+    <Version>6.0.0</Version>
+    <AssemblyVersion>6.0.0.0</AssemblyVersion>
+    <FileVersion>6.0.0.0</FileVersion>
+    <InformationalVersion>6.0.0+Branch.master.Sha.862058e463ca89feb76e0812f2b3fae12a247ded</InformationalVersion>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="MiniMediator" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.7" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0" />
-    <PackageReference Include="MiniMediator.Abstractions" Version="5.0.0" />
+    <PackageReference Include="MiniMediator" Version="$(PackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="MiniMediator.Abstractions" Version="$(PackageVersion)" />
     <PackageReference Include="NSubstitute" Version="4.2.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -26,7 +28,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\MiniMediator.DependencyInjection\MiniMediator.DependencyInjection.csproj" />
   </ItemGroup>

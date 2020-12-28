@@ -18,10 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
             typeof(IMessageHandlerAsync<>)
         };
 
-        public static IServiceCollection AddMediator(this IServiceCollection services)
-        {
-            return AddMediator(services, options => { });
-        }
+        public static IServiceCollection AddMediator(this IServiceCollection services) => AddMediator(services, options => { });
 
         public static IServiceCollection AddMediator(this IServiceCollection services, Action<MediatorOptions> options)
         {
@@ -51,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         var mediator = new ContainerMediator(
                             provider,
                             handlerTypes,
-                            provider.GetService<ILogger<IMediator>>(),
+                            provider.GetService<ILogger<IMediator>>()!,
                             optionsInstance.LoggingLevel
                         );
 

@@ -10,43 +10,80 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- task: gitversion/setup@0
+  inputs:
+    versionSpec: '5.x'
+- task: gitversion/execute@0
+  inputs:
+    additionalArguments: '/updateprojectfiles'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
-    projects: '**/*.csproj'
+    projects: '**/MiniMediator.Abstractions.csproj'
     feedsToUse: 'select'
-
+    vstsFeed: '$(vstsFeed)'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: '**/*.csproj'
-
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: '**/*.csproj'
-    testRunTitle: 'All Tests'
-
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    packagesToPack: '**/MiniMediator.csproj'
-    versioningScheme: 'off'
-
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    packagesToPack: '**/MiniMediator.DependencyInjection.csproj'
-    versioningScheme: 'off'
-
+    projects: '**/MiniMediator.Abstractions.csproj'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
     packagesToPack: '**/MiniMediator.Abstractions.csproj'
+    packDirectory: '$(Build.ArtifactStagingDirectory)/MiniMediator.Abstractions'
     versioningScheme: 'off'
-
-- task: PublishBuildArtifacts@1
+- task: DotNetCoreCLI@2
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'package'
-    publishLocation: 'Container'
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/MiniMediator.Abstractions/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: '$(vstsFeed)'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '**/MiniMediator.csproj'
+    feedsToUse: 'select'
+    vstsFeed: '$(vstsFeed)'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**/MiniMediator.csproj'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/MiniMediator.csproj'
+    packDirectory: '$(Build.ArtifactStagingDirectory)/MiniMediator'
+    versioningScheme: 'off'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/MiniMediator/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: '$(vstsFeed)'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '**/MiniMediator.DependencyInjection.csproj'
+    feedsToUse: 'select'
+    vstsFeed: '$(vstsFeed)'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**/MiniMediator.DependencyInjection.csproj'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/MiniMediator.DependencyInjection.csproj'
+    packDirectory: '$(Build.ArtifactStagingDirectory)/MiniMediator.DependencyInjection'
+    versioningScheme: 'off'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/MiniMediator.DependencyInjection/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: '$(vstsFeed)'
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifact: 'package'
+    publishLocation: 'pipeline'

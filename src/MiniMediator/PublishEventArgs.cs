@@ -8,6 +8,7 @@ namespace MiniMediator
         {
             Message = message;
         }
+
         public object Message { get; }
     }
 }

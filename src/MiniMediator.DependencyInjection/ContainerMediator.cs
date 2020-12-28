@@ -12,64 +12,78 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public static partial class ContainerExtensions
     {
-        private static readonly MethodInfo _subscribeFilteredMethod = typeof(MediatorExtensions).GetMethods().Where(
-               method =>
-               {
-                   if (
-                       method.Name == nameof(MediatorExtensions.Subscribe) &&
-                       method.IsGenericMethod &&
-                       method.IsStatic &&
-                       method.IsPublic &&
-                       method.GetParameters().Length == 2
-                   )
-                   {
-                       return method.GetParameters()
-                           .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IFilteredMessageHandler<>))
-                           .Count() == 1;
-                   }
+        private static readonly Type _filteredMessageHanderType = typeof(IFilteredMessageHandler<>);
+        private static readonly Type _filteredMessageHandlerAsyncType = typeof(IFilteredMessageHandlerAsync<>);
+        private static readonly Type _messageHandlerType = typeof(IMessageHandler<>);
+        private static readonly Type _messageHandlerAsyncType = typeof(IMessageHandlerAsync<>);
 
-                   return false;
-               }
-           ).Single();
-
-        private static readonly MethodInfo _subscribeAsyncFilteredMethod = typeof(MediatorExtensions).GetMethods().Where(
-            method =>
-            {
-                if (
-                    method.Name == nameof(MediatorExtensions.SubscribeAsync) &&
-                    method.IsGenericMethod &&
-                    method.IsStatic &&
-                    method.IsPublic &&
-                    method.GetParameters().Length == 2
-                )
+        private static readonly MethodInfo _subscribeFilteredMethod = typeof(MediatorExtensions)
+            .GetMethods()
+            .Where(
+                method =>
                 {
-                    return method.GetParameters()
-                        .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IFilteredMessageHandlerAsync<>))
-                        .Count() == 1;
-                }
+                    if (
+                        method.Name == nameof(MediatorExtensions.Subscribe) &&
+                        method.IsGenericMethod &&
+                        method.IsStatic &&
+                        method.IsPublic &&
+                        method.GetParameters().Length == 2
+                    )
+                    {
+                        return method.GetParameters()
+                            .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == _filteredMessageHanderType)
+                            .Count() == 1;
+                    }
 
-                return false;
-            }
-        ).Single();
-        private static readonly MethodInfo _subscribeMethod = typeof(MediatorExtensions).GetMethods().Where(
-            method =>
-            {
-                if (
-                    method.Name == nameof(MediatorExtensions.Subscribe) &&
-                    method.IsGenericMethod &&
-                    method.IsStatic &&
-                    method.IsPublic &&
-                    method.GetParameters().Length == 2
-                )
+                    return false;
+                }
+            )
+            .Single();
+
+        private static readonly MethodInfo _subscribeAsyncFilteredMethod = typeof(MediatorExtensions)
+            .GetMethods()
+            .Where(
+                method =>
                 {
-                    return method.GetParameters()
-                        .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
-                        .Count() == 1;
-                }
+                    if (
+                        method.Name == nameof(MediatorExtensions.SubscribeAsync) &&
+                        method.IsGenericMethod &&
+                        method.IsStatic &&
+                        method.IsPublic &&
+                        method.GetParameters().Length == 2
+                    )
+                    {
+                        return method.GetParameters()
+                            .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == _filteredMessageHandlerAsyncType)
+                            .Count() == 1;
+                    }
 
-                return false;
-            }
-        ).Single();
+                    return false;
+                }
+            )
+            .Single();
+        private static readonly MethodInfo _subscribeMethod = typeof(MediatorExtensions)
+            .GetMethods()
+            .Where(
+                method =>
+                {
+                    if (
+                        method.Name == nameof(MediatorExtensions.Subscribe) &&
+                        method.IsGenericMethod &&
+                        method.IsStatic &&
+                        method.IsPublic &&
+                        method.GetParameters().Length == 2
+                    )
+                    {
+                        return method.GetParameters()
+                            .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == _messageHandlerType)
+                            .Count() == 1;
+                    }
+
+                    return false;
+                }
+            )
+            .Single();
 
         private static readonly MethodInfo _subscribeAsyncMethod = typeof(MediatorExtensions).GetMethods().Where(
             method =>
@@ -83,7 +97,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 )
                 {
                     return method.GetParameters()
-                        .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(IMessageHandlerAsync<>))
+                        .Where(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == _messageHandlerAsyncType)
                         .Count() == 1;
                 }
 
@@ -119,29 +133,29 @@ namespace Microsoft.Extensions.DependencyInjection
 
             private void AddHandlers()
             {
-                foreach (var handler in _handlers)
+                foreach (var (type, messageType) in _handlers)
                 {
-                    var genericMethod = GetMethodInfo(handler.type).MakeGenericMethod(handler.messageType);
-                    var handlerInstance = _provider.GetService(handler.type);
+                    var genericMethod = GetMethodInfo(type).MakeGenericMethod(messageType);
+                    var handlerInstance = _provider.GetService(type)!;
                     genericMethod.Invoke(null, new object[] { this, handlerInstance });
                 }
             }
 
-            private MethodInfo GetMethodInfo(Type handlerType)
+            private static MethodInfo GetMethodInfo(Type handlerType)
             {
-                if (CheckHandlerType(handlerType, typeof(IFilteredMessageHandler<>)))
+                if (CheckHandlerType(handlerType, _filteredMessageHanderType))
                 {
                     return _subscribeFilteredMethod!;
                 }
-                else if (CheckHandlerType(handlerType, typeof(IFilteredMessageHandlerAsync<>)))
+                else if (CheckHandlerType(handlerType, _filteredMessageHandlerAsyncType))
                 {
                     return _subscribeAsyncFilteredMethod!;
                 }
-                else if (CheckHandlerType(handlerType, typeof(IMessageHandler<>)))
+                else if (CheckHandlerType(handlerType, _messageHandlerType))
                 {
                     return _subscribeMethod!;
                 }
-                else if (CheckHandlerType(handlerType, typeof(IMessageHandlerAsync<>)))
+                else if (CheckHandlerType(handlerType, _messageHandlerAsyncType))
                 {
                     return _subscribeAsyncMethod!;
                 }
@@ -151,7 +165,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             private static bool CheckHandlerType(Type handlerType, Type handlerInterfaceType)
             {
-                return handlerType.IsGenericType &&
+                return
+                    handlerType.IsGenericType &&
                     handlerType.GetGenericTypeDefinition() == handlerInterfaceType ||
                     handlerType.GetInterfaces().Any(
                         t => t.IsGenericType && t.GetGenericTypeDefinition() == handlerInterfaceType

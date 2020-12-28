@@ -4,6 +4,6 @@ namespace MiniMediator.Abstractions
 {
     public interface IFilteredMessageHandler<TMessage> : IMessageHandler<TMessage>
     {
-        Func<TMessage,bool> Predicate { get; }
+        Func<TMessage, bool> Predicate { get; }
     }
 }

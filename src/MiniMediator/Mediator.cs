@@ -34,11 +34,12 @@ namespace MiniMediator
                 "Publishing {@Message}",
                 message
             );
+
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var type = typeof(TMessage);
-
             var messageObservers = observers.Where(kv => kv.Key == type || kv.Key.IsAssignableFrom(type)).ToArray();
+
             foreach (var pair in messageObservers)
             {
                 pair.Value.OnNext(message!);

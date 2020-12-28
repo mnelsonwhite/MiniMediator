@@ -1,7 +1,4 @@
 ﻿namespace MiniMediator.DependencyInjection.Tests
 {
-    public class SecondTestMessage
-    {
-
-    }
+    public record SecondTestMessage;
 }
