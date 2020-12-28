@@ -19,17 +19,17 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
-    projects: '**/MiniMediator.Abstractions.csproj'
+    projects: '**/MiniMediator.Abstractions/MiniMediator.Abstractions.csproj'
     feedsToUse: 'select'
     vstsFeed: '$(vstsFeed)'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: '**/MiniMediator.Abstractions.csproj'
+    projects: '**/MiniMediator.Abstractions/MiniMediator.Abstractions.csproj'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    packagesToPack: '**/MiniMediator.Abstractions.csproj'
+    packagesToPack: '**/MiniMediator.Abstractions/MiniMediator.Abstractions.csproj'
     packDirectory: '$(Build.ArtifactStagingDirectory)/MiniMediator.Abstractions'
     versioningScheme: 'off'
 - task: DotNetCoreCLI@2
@@ -41,17 +41,17 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
-    projects: '**/MiniMediator.csproj'
+    projects: '**/MiniMediator/MiniMediator.csproj'
     feedsToUse: 'select'
     vstsFeed: '$(vstsFeed)'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: '**/MiniMediator.csproj'
+    projects: '**/MiniMediator/MiniMediator.csproj'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    packagesToPack: '**/MiniMediator.csproj'
+    packagesToPack: '**/MiniMediator/MiniMediator.csproj'
     packDirectory: '$(Build.ArtifactStagingDirectory)/MiniMediator'
     versioningScheme: 'off'
 - task: DotNetCoreCLI@2
@@ -63,17 +63,17 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
-    projects: '**/MiniMediator.DependencyInjection.csproj'
+    projects: '**/MiniMediator.DependencyInjection/MiniMediator.DependencyInjection.csproj'
     feedsToUse: 'select'
     vstsFeed: '$(vstsFeed)'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: '**/MiniMediator.DependencyInjection.csproj'
+    projects: '**/MiniMediator.DependencyInjection/MiniMediator.DependencyInjection.csproj'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    packagesToPack: '**/MiniMediator.DependencyInjection.csproj'
+    packagesToPack: '**/MiniMediator.DependencyInjection/MiniMediator.DependencyInjection.csproj'
     packDirectory: '$(Build.ArtifactStagingDirectory)/MiniMediator.DependencyInjection'
     versioningScheme: 'off'
 - task: DotNetCoreCLI@2
